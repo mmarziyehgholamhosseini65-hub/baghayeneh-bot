@@ -1,135 +1,206 @@
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
+import os
+import logging
 
-NAME, PHONE, MESSAGE = range(3)
+from telegram import (
+    Update,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    ConversationHandler,
+    filters,
+)
 
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-ADMIN_ID = 123456789
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
 
-user_data = {}
+TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
+
+(
+    FULLNAME,
+    PHONE,
+    ADDRESS,
+    DESCRIPTION,
+) = range(4)
+
+MAIN_KEYBOARD = ReplyKeyboardMarkup(
+    [
+        ["👴 مراقبت سالمند", "👶 مراقبت کودک"],
+        ["💰 اطلاع از هزینه", "📝 ثبت درخواست"],
+        ["🏢 درباره ما", "📞 تماس با ما"],
+    ],
+    resize_keyboard=True,
+)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🌿 به باغ آینه خوش آمدید\nنام خود را وارد کنید:")
-    return NAME
-
-async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_data[user_id] = {"name": update.message.text}
-
-    keyboard = [[KeyboardButton("📱 ارسال شماره", request_contact=True)]]
-    await update.message.reply_text(
-        "شماره خود را ارسال کنید:",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
+    text = (
+        "🌹 به ربات باغ آینه خوش آمدید.\n\n"
+        "لطفاً یکی از گزینه‌های زیر را انتخاب کنید."
     )
+
+    await update.message.reply_text(
+        text,
+        reply_markup=MAIN_KEYBOARD,
+    )
+
+
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+
+    if text == "👴 مراقبت سالمند":
+        await update.message.reply_text(
+            "خدمات مراقبت سالمند به صورت شبانه‌روزی، روزانه و ساعتی ارائه می‌شود."
+        )
+
+    elif text == "👶 مراقبت کودک":
+        await update.message.reply_text(
+            "خدمات مراقبت کودک توسط نیروهای مجرب و قابل اعتماد انجام می‌شود."
+        )
+
+    elif text == "💰 اطلاع از هزینه":
+        await update.message.reply_text(
+            "هزینه خدمات با توجه به شرایط، ساعات کاری و محل سکونت تعیین می‌شود."
+        )
+
+    elif text == "🏢 درباره ما":
+        await update.message.reply_text(
+            "باغ آینه ارائه‌دهنده خدمات مراقبت از سالمند و کودک با نیروهای آموزش‌دیده است."
+        )
+
+    elif text == "📞 تماس با ما":
+        await update.message.reply_text(
+            "شماره تماس:\n0912XXXXXXXX"
+        )
+
+    elif text == "📝 ثبت درخواست":
+        await update.message.reply_text(
+            "لطفاً نام و نام خانوادگی خود را وارد کنید:"
+        )
+        return FULLNAME
+
+    return ConversationHandler.END
+
+
+async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["fullname"] = update.message.text
+
+    await update.message.reply_text(
+        "شماره تماس خود را وارد کنید:"
+    )
+
     return PHONE
 
-async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_data[user_id]["phone"] = update.message.contact.phone_number
 
-    await update.message.reply_text("پیام یا درخواست خود را بنویسید:")
-    return MESSAGE
+async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["phone"] = update.message.text
 
-async def get_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_data[user_id]["message"] = update.message.text
+    await update.message.reply_text(
+        "محدوده آدرس را وارد کنید:"
+    )
 
-    info = user_data[user_id]
+    return ADDRESS
 
-    await update.message.reply_text("✅ درخواست شما ثبت شد")
+
+async def address(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["address"] = update.message.text
+
+    await update.message.reply_text(
+        "لطفاً توضیحی درباره شرایط سالمند یا کودک بنویسید:"
+    )
+
+    return DESCRIPTION
+
+
+async def description(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["description"] = update.message.text
+
+    message = f"""
+📥 درخواست جدید
+
+👤 نام:
+{context.user_data['fullname']}
+
+📞 شماره تماس:
+{context.user_data['phone']}
+
+📍 محدوده:
+{context.user_data['address']}
+
+📝 توضیحات:
+{context.user_data['description']}
+"""
 
     await context.bot.send_message(
         chat_id=ADMIN_ID,
-        text=f"""
-📥 درخواست جدید
+        text=message,
+    )
 
-👤 نام: {info['name']}
-📞 شماره: {info['phone']}
-💬 پیام: {info['message']}
-"""
+    await update.message.reply_text(
+        "✅ درخواست شما با موفقیت ثبت شد.\nبه‌زودی با شما تماس خواهیم گرفت.",
+        reply_markup=MAIN_KEYBOARD,
     )
 
     return ConversationHandler.END
 
-app = Application.builder().token(BOT_TOKEN).build()
 
-conv = ConversationHandler(
-    entry_points=[CommandHandler("start", start)],
-    states={
-        NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-        PHONE: [MessageHandler(filters.CONTACT, get_phone)],
-        MESSAGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_message)],
-    },
-    fallbacks=[]
-)
-
-app.add_handler(conv)
-
-app.run_polling()from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, ContextTypes
-
-NAME, PHONE, MESSAGE = range(3)
-
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-ADMIN_ID = 123456789
-
-user_data = {}
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🌿 به باغ آینه خوش آمدید\nنام خود را وارد کنید:")
-    return NAME
-
-async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_data[user_id] = {"name": update.message.text}
-
-    keyboard = [[KeyboardButton("📱 ارسال شماره", request_contact=True)]]
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "شماره خود را ارسال کنید:",
-        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
-    )
-    return PHONE
-
-async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_data[user_id]["phone"] = update.message.contact.phone_number
-
-    await update.message.reply_text("پیام یا درخواست خود را بنویسید:")
-    return MESSAGE
-
-async def get_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.chat_id
-    user_data[user_id]["message"] = update.message.text
-
-    info = user_data[user_id]
-
-    await update.message.reply_text("✅ درخواست شما ثبت شد")
-
-    await context.bot.send_message(
-        chat_id=ADMIN_ID,
-        text=f"""
-📥 درخواست جدید
-
-👤 نام: {info['name']}
-📞 شماره: {info['phone']}
-💬 پیام: {info['message']}
-"""
+        "عملیات لغو شد.",
+        reply_markup=MAIN_KEYBOARD,
     )
 
     return ConversationHandler.END
 
-app = Application.builder().token(BOT_TOKEN).build()
 
-conv = ConversationHandler(
-    entry_points=[CommandHandler("start", start)],
-    states={
-        NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-        PHONE: [MessageHandler(filters.CONTACT, get_phone)],
-        MESSAGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_message)],
-    },
-    fallbacks=[]
-)
+def main():
+    app = Application.builder().token(TOKEN).build()
 
-app.add_handler(conv)
+    conv = ConversationHandler(
+        entry_points=[
+            MessageHandler(
+                filters.Regex("^📝 ثبت درخواست$"),
+                menu,
+            )
+        ],
+        states={
+            FULLNAME: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, fullname)
+            ],
+            PHONE: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, phone)
+            ],
+            ADDRESS: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, address)
+            ],
+            DESCRIPTION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, description)
+            ],
+        },
+        fallbacks=[
+            CommandHandler("cancel", cancel)
+        ],
+    )
 
-app.run_polling()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(conv)
+
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            menu,
+        )
+    )
+
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
