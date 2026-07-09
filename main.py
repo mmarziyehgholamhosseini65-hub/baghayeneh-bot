@@ -1,11 +1,7 @@
 import os
 import logging
 
-from telegram import (
-    Update,
-    ReplyKeyboardMarkup,
-    KeyboardButton,
-)
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -23,183 +19,701 @@ logging.basicConfig(
 TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
+
 (
     FULLNAME,
     PHONE,
     ADDRESS,
     DESCRIPTION,
-) = range(4)
+    CHILD_AGE,
+    CHILD_TIME,
+    CHILD_PLACE,
+    CHILD_DESC,
+    OLD_AGE,
+    OLD_HEALTH,
+    OLD_TIME,
+    OLD_PLACE,
+    OLD_DESC,
+    INTRO_CHOICE,
+    INTRO_NAME,
+) = range(15)
+
 
 MAIN_KEYBOARD = ReplyKeyboardMarkup(
     [
         ["👴 مراقبت سالمند", "👶 مراقبت کودک"],
-        ["💰 اطلاع از هزینه", "📝 ثبت درخواست"],
+        ["💚 اطلاع از هزینه‌ها", "📝 ثبت درخواست"],
         ["🏢 درباره ما", "📞 تماس با ما"],
+        ["🤝 معرفی نیرو"],
     ],
     resize_keyboard=True,
 )
 
 
+async def send_admin(context, text):
+
+    try:
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=text
+        )
+        logging.info("Admin message sent")
+
+    except Exception as e:
+        logging.error(f"Admin send error: {e}")
+
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = (
-        "🌹 به ربات باغ آینه خوش آمدید.\n\n"
-        "لطفاً یکی از گزینه‌های زیر را انتخاب کنید."
-    )
+
+    text = """
+سلام و وقت بخیر 🌿
+
+به مؤسسه باغ آینه خوش آمدید 💚
+
+اینجا کنار شما هستیم تا با معرفی نیروهای دلسوز، مطمئن و مسئولیت‌پذیر برای نگهداری از سالمند، کودک و بیمار، آرامش و اطمینان خاطر را برای شما فراهم کنیم.
+
+لطفاً درخواست خود را ثبت کنید تا همکاران ما در اولین فرصت راهنمایی‌تان کنند.
+"""
 
     await update.message.reply_text(
         text,
-        reply_markup=MAIN_KEYBOARD,
+        reply_markup=MAIN_KEYBOARD
     )
 
 
+
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     text = update.message.text
 
-    if text == "👴 مراقبت سالمند":
+
+    if text == "🏢 درباره ما":
+
         await update.message.reply_text(
-            "خدمات مراقبت سالمند به صورت شبانه‌روزی، روزانه و ساعتی ارائه می‌شود."
+"""
+درباره مؤسسه باغ آینه 🌿
+
+در باغ آینه، ما باور داریم مراقبت از عزیزان نیازمند چیزی فراتر از یک نیروی کار است؛ نیازمند اعتماد، مسئولیت و دلسوزی است.
+
+ما با هدف کمک به خانواده‌ها و مراکز درمانی، نیروهای متعهد و قابل اعتماد را برای نگهداری از سالمندان، کودکان و بیماران معرفی می‌کنیم.
+
+تلاش ما این است که با شناخت نیاز شما، انتخابی مطمئن و مناسب را فراهم کنیم تا با آرامش خاطر، مراقبت از عزیزانتان را به افراد شایسته بسپارید.
+
+باغ آینه؛ پلی میان اعتماد شما و مراقبتی شایسته 💚
+"""
         )
 
-    elif text == "👶 مراقبت کودک":
+
+    elif text == "💚 اطلاع از هزینه‌ها":
+
         await update.message.reply_text(
-            "خدمات مراقبت کودک توسط نیروهای مجرب و قابل اعتماد انجام می‌شود."
+"""
+💚 دریافت مشاوره و اطلاع از هزینه خدمات
+
+انتخاب یک همراه مطمئن برای مراقبت از عزیزانتان، تصمیمی مهم است. ما در باغ آینه قبل از اعلام هزینه، شرایط و نیاز شما را به‌دقت بررسی می‌کنیم تا مناسب‌ترین خدمت را پیشنهاد دهیم.
+
+هزینه‌ها بر اساس نوع مراقبت، میزان نیاز، زمان همکاری و شرایط فردی شما تعیین می‌شود؛ تا هم کیفیت خدمات حفظ شود و هم انتخابی مناسب و منصفانه داشته باشید.
+
+🌿 برای دریافت مشاوره رایگان و اطلاع از هزینه دقیق، درخواست خود را ثبت کنید. کارشناسان باغ آینه همراه شما هستند تا بهترین انتخاب را داشته باشید.
+"""
         )
 
-    elif text == "💰 اطلاع از هزینه":
-        await update.message.reply_text(
-            "هزینه خدمات با توجه به شرایط، ساعات کاری تعیین می‌شود."
-        )
-
-    elif text == "🏢 درباره ما":
-        await update.message.reply_text(
-            "باغ آینه ارائه‌دهنده خدمات مراقبت از سالمند و کودک با نیروهای آموزش‌دیده است."
-        )
 
     elif text == "📞 تماس با ما":
+
         await update.message.reply_text(
-            "شماره تماس:\n09191398300"
+"""
+📞 تماس با مؤسسه باغ آینه
+
+۰۹۱۹۱۳۹۸۳۰۰
+۰۹۳۶۶۰۷۷۳۷۸
+"""
         )
 
+
+    elif text == "👶 مراقبت کودک":
+
+        await update.message.reply_text(
+            "🌸 سن کودک را وارد کنید:"
+        )
+
+        return CHILD_AGE
+
+
+    elif text == "👴 مراقبت سالمند":
+
+        await update.message.reply_text(
+            "🌿 سن سالمند را وارد کنید:"
+        )
+
+        return OLD_AGE
+
+
     elif text == "📝 ثبت درخواست":
+
         await update.message.reply_text(
             "لطفاً نام و نام خانوادگی خود را وارد کنید:"
         )
+
         return FULLNAME
 
+
+    elif text == "🤝 معرفی نیرو":
+
+        await update.message.reply_text(
+            "آیا معرف دارید؟ (بله یا خیر)"
+        )
+
+        return INTRO_CHOICE
+
+
     return ConversationHandler.END
+    import os
+import logging
+
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    ConversationHandler,
+    filters,
+)
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+
+TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 
-async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE):
+(
+    FULLNAME,
+    PHONE,
+    ADDRESS,
+    DESCRIPTION,
+    CHILD_AGE,
+    CHILD_TIME,
+    CHILD_PLACE,
+    CHILD_DESC,
+    OLD_AGE,
+    OLD_HEALTH,
+    OLD_TIME,
+    OLD_PLACE,
+    OLD_DESC,
+    INTRO_CHOICE,
+    INTRO_NAME,
+) = range(15)
+
+
+MAIN_KEYBOARD = ReplyKeyboardMarkup(
+    [
+        ["👴 مراقبت سالمند", "👶 مراقبت کودک"],
+        ["💚 اطلاع از هزینه‌ها", "📝 ثبت درخواست"],
+        ["🏢 درباره ما", "📞 تماس با ما"],
+        ["🤝 معرفی نیرو"],
+    ],
+    resize_keyboard=True,
+)
+
+
+async def send_admin(context, text):
+
+    try:
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=text
+        )
+        logging.info("Admin message sent")
+
+    except Exception as e:
+        logging.error(f"Admin send error: {e}")
+
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    text = """
+سلام و وقت بخیر 🌿
+
+به مؤسسه باغ آینه خوش آمدید 💚
+
+اینجا کنار شما هستیم تا با معرفی نیروهای دلسوز، مطمئن و مسئولیت‌پذیر برای نگهداری از سالمند، کودک و بیمار، آرامش و اطمینان خاطر را برای شما فراهم کنیم.
+
+لطفاً درخواست خود را ثبت کنید تا همکاران ما در اولین فرصت راهنمایی‌تان کنند.
+"""
+
+    await update.message.reply_text(
+        text,
+        reply_markup=MAIN_KEYBOARD
+    )
+
+
+
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    text = update.message.text
+
+
+    if text == "🏢 درباره ما":
+
+        await update.message.reply_text(
+"""
+درباره مؤسسه باغ آینه 🌿
+
+در باغ آینه، ما باور داریم مراقبت از عزیزان نیازمند چیزی فراتر از یک نیروی کار است؛ نیازمند اعتماد، مسئولیت و دلسوزی است.
+
+ما با هدف کمک به خانواده‌ها و مراکز درمانی، نیروهای متعهد و قابل اعتماد را برای نگهداری از سالمندان، کودکان و بیماران معرفی می‌کنیم.
+
+تلاش ما این است که با شناخت نیاز شما، انتخابی مطمئن و مناسب را فراهم کنیم تا با آرامش خاطر، مراقبت از عزیزانتان را به افراد شایسته بسپارید.
+
+باغ آینه؛ پلی میان اعتماد شما و مراقبتی شایسته 💚
+"""
+        )
+
+
+    elif text == "💚 اطلاع از هزینه‌ها":
+
+        await update.message.reply_text(
+"""
+💚 دریافت مشاوره و اطلاع از هزینه خدمات
+
+انتخاب یک همراه مطمئن برای مراقبت از عزیزانتان، تصمیمی مهم است. ما در باغ آینه قبل از اعلام هزینه، شرایط و نیاز شما را به‌دقت بررسی می‌کنیم تا مناسب‌ترین خدمت را پیشنهاد دهیم.
+
+هزینه‌ها بر اساس نوع مراقبت، میزان نیاز، زمان همکاری و شرایط فردی شما تعیین می‌شود؛ تا هم کیفیت خدمات حفظ شود و هم انتخابی مناسب و منصفانه داشته باشید.
+
+🌿 برای دریافت مشاوره رایگان و اطلاع از هزینه دقیق، درخواست خود را ثبت کنید. کارشناسان باغ آینه همراه شما هستند تا بهترین انتخاب را داشته باشید.
+"""
+        )
+
+
+    elif text == "📞 تماس با ما":
+
+        await update.message.reply_text(
+"""
+📞 تماس با مؤسسه باغ آینه
+
+۰۹۱۹۱۳۹۸۳۰۰
+۰۹۳۶۶۰۷۷۳۷۸
+"""
+        )
+
+
+    elif text == "👶 مراقبت کودک":
+
+        await update.message.reply_text(
+            "🌸 سن کودک را وارد کنید:"
+        )
+
+        return CHILD_AGE
+
+
+    elif text == "👴 مراقبت سالمند":
+
+        await update.message.reply_text(
+            "🌿 سن سالمند را وارد کنید:"
+        )
+
+        return OLD_AGE
+
+
+    elif text == "📝 ثبت درخواست":
+
+        await update.message.reply_text(
+            "لطفاً نام و نام خانوادگی خود را وارد کنید:"
+        )
+
+        return FULLNAME
+
+
+    elif text == "🤝 معرفی نیرو":
+
+        await update.message.reply_text(
+            "آیا معرف دارید؟ (بله یا خیر)"
+        )
+
+        return INTRO_CHOICE
+
+
+    return ConversationHandler.END
+    async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     context.user_data["fullname"] = update.message.text
 
     await update.message.reply_text(
-        "شماره تماس خود را وارد کنید:"
+        "📞 شماره تماس خود را وارد کنید:"
     )
 
     return PHONE
 
 
+
 async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     context.user_data["phone"] = update.message.text
 
     await update.message.reply_text(
-        "محدوده آدرس را وارد کنید:"
+        "📍 محدوده آدرس را وارد کنید:"
     )
 
     return ADDRESS
 
 
+
 async def address(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     context.user_data["address"] = update.message.text
 
     await update.message.reply_text(
-        "لطفاً توضیحی درباره شرایط سالمند یا کودک بنویسید:"
+        "📝 توضیحات درخواست خود را وارد کنید:"
     )
 
     return DESCRIPTION
 
 
+
 async def description(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     context.user_data["description"] = update.message.text
+
 
     message = f"""
 📥 درخواست جدید
 
 👤 نام:
-{context.user_data['fullname']}
+{context.user_data.get('fullname')}
 
 📞 شماره تماس:
-{context.user_data['phone']}
+{context.user_data.get('phone')}
 
-📍 محدوده:
-{context.user_data['address']}
+📍 آدرس:
+{context.user_data.get('address')}
 
 📝 توضیحات:
-{context.user_data['description']}
+{context.user_data.get('description')}
 """
 
-    await context.bot.send_message(
-        chat_id=ADMIN_ID,
-        text=message,
+
+    await send_admin(
+        context,
+        message
     )
+
 
     await update.message.reply_text(
-        "✅ درخواست شما با موفقیت ثبت شد.\nبه‌زودی با شما تماس خواهیم گرفت.",
-        reply_markup=MAIN_KEYBOARD,
+        "✅ درخواست شما با موفقیت ثبت شد.\n"
+        "کارشناسان باغ آینه به‌زودی با شما تماس می‌گیرند.",
+        reply_markup=MAIN_KEYBOARD
     )
 
+
     return ConversationHandler.END
+
+
+
+
+async def intro_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    answer = update.message.text.lower()
+
+
+    if answer in ["بله", "بلی", "اره", "آره"]:
+
+        await update.message.reply_text(
+            "لطفاً نام و نام خانوادگی معرف را وارد کنید:"
+        )
+
+        return INTRO_NAME
+
+
+    else:
+
+        message = f"""
+🤝 معرفی نیرو
+
+👤 درخواست بدون معرف
+
+نام:
+{update.effective_user.full_name}
+
+آیدی:
+{update.effective_user.id}
+"""
+
+
+        await send_admin(
+            context,
+            message
+        )
+
+
+        await update.message.reply_text(
+            "متشکریم. اطلاعات شما ثبت شد.",
+            reply_markup=MAIN_KEYBOARD
+        )
+
+
+        return ConversationHandler.END
+
+
+
+
+async def intro_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    context.user_data["intro_name"] = update.message.text
+
+
+    message = f"""
+🤝 معرفی نیرو
+
+👤 نام درخواست کننده:
+{update.effective_user.full_name}
+
+🆔 آیدی:
+{update.effective_user.id}
+
+👥 معرف:
+{context.user_data['intro_name']}
+"""
+
+
+    await send_admin(
+        context,
+        message
+    )
+
+
+    await update.message.reply_text(
+        "✅ اطلاعات معرف ثبت شد.",
+        reply_markup=MAIN_KEYBOARD
+    )
+
+
+    return ConversationHandler.END
+
+
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     await update.message.reply_text(
         "عملیات لغو شد.",
-        reply_markup=MAIN_KEYBOARD,
+        reply_markup=MAIN_KEYBOARD
     )
 
     return ConversationHandler.END
 
 
-def main():
-    app = Application.builder().token(TOKEN).build()
 
-    conv = ConversationHandler(
-        entry_points=[
-            MessageHandler(
-                filters.Regex("^📝 ثبت درخواست$"),
-                menu,
-            )
-        ],
-        states={
-            FULLNAME: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, fullname)
-            ],
-            PHONE: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, phone)
-            ],
-            ADDRESS: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, address)
-            ],
-            DESCRIPTION: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, description)
-            ],
-        },
-        fallbacks=[
-            CommandHandler("cancel", cancel)
-        ],
+
+async def error_handler(update, context):
+
+    logging.error(
+        "Exception:",
+        exc_info=context.error
     )
 
-    app.add_handler(CommandHandler("start", start))
+
+
+
+def main():
+
+    app = Application.builder().token(TOKEN).build()
+
+
+    conv = ConversationHandler(
+
+        entry_points=[
+            MessageHandler(
+                filters.Regex(
+                    "^📝 ثبت درخواست$"
+                ),
+                menu
+            ),
+
+            MessageHandler(
+                filters.Regex(
+                    "^👶 مراقبت کودک$"
+                ),
+                menu
+            ),
+
+            MessageHandler(
+                filters.Regex(
+                    "^👴 مراقبت سالمند$"
+                ),
+                menu
+            ),
+
+            MessageHandler(
+                filters.Regex(
+                    "^🤝 معرفی نیرو$"
+                ),
+                menu
+            ),
+        ],
+
+
+        states={
+
+            FULLNAME:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    fullname
+                )
+            ],
+
+            PHONE:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    phone
+                )
+            ],
+
+            ADDRESS:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    address
+                )
+            ],
+
+            DESCRIPTION:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    description
+                )
+            ],
+
+
+            CHILD_AGE:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    child_age
+                )
+            ],
+
+            CHILD_TIME:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    child_time
+                )
+            ],
+
+            CHILD_PLACE:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    child_place
+                )
+            ],
+
+            CHILD_DESC:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    child_desc
+                )
+            ],
+
+
+            OLD_AGE:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    old_age
+                )
+            ],
+
+            OLD_HEALTH:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    old_health
+                )
+            ],
+
+            OLD_TIME:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    old_time
+                )
+            ],
+
+            OLD_PLACE:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    old_place
+                )
+            ],
+
+            OLD_DESC:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    old_desc
+                )
+            ],
+
+
+            INTRO_CHOICE:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    intro_choice
+                )
+            ],
+
+            INTRO_NAME:[
+                MessageHandler(
+                    filters.TEXT & ~filters.COMMAND,
+                    intro_name
+                )
+            ],
+        },
+
+
+        fallbacks=[
+            CommandHandler(
+                "cancel",
+                cancel
+            )
+        ],
+
+        conversation_timeout=600,
+    )
+
+
+    app.add_handler(
+        CommandHandler(
+            "start",
+            start
+        )
+    )
+
+
     app.add_handler(conv)
+
 
     app.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
-            menu,
+            menu
         )
     )
 
-    app.run_polling()
+
+    app.add_error_handler(
+        error_handler
+    )
+
+
+    logging.info(
+        "BOT STARTED"
+    )
+
+
+    app.run_polling(
+        drop_pending_updates=True
+    )
+
 
 
 if __name__ == "__main__":
