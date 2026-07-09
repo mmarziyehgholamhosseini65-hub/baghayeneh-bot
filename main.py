@@ -340,7 +340,14 @@ app.add_handler(
 
 app.add_error_handler(  
     error_handler  
-)  
+)  async def fullname(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+     context.user_data["fullname"] = update.message.text
+ 
+     await update.message.reply_text(
+         "📞 شماره تماس خود را وارد کنید:"
+    ) 
+     return PHONE
 
 
 logging.info(  
