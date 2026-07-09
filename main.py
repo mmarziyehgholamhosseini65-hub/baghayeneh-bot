@@ -67,7 +67,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif text == "💰 اطلاع از هزینه":
         await update.message.reply_text(
-            "هزینه خدمات با توجه به شرایط، ساعات کاری و محل سکونت تعیین می‌شود."
+            "هزینه خدمات با توجه به شرایط، ساعات کاری تعیین می‌شود."
         )
 
     elif text == "🏢 درباره ما":
@@ -77,7 +77,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif text == "📞 تماس با ما":
         await update.message.reply_text(
-            "شماره تماس:\n0912XXXXXXXX"
+            "شماره تماس:\n09191398300"
         )
 
     elif text == "📝 ثبت درخواست":
